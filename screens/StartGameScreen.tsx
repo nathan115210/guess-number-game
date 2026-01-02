@@ -1,9 +1,16 @@
-import { Alert, StyleSheet, TextInput, View } from "react-native";
-import GNButton from "../components/GNButton";
-import colors from "../styles/colors";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import GNButton from "../components/ui/GNButton";
 import { useState } from "react";
+import Title from "../components/ui/Title";
+import colors from "../styles/colors";
+import typography from "../styles/typography";
+import Card from "../components/ui/Card";
 
-export default function StartGameScreen() {
+export default function StartGameScreen({
+  onPickNumber,
+}: {
+  onPickNumber: (pickedNumber: string) => void;
+}) {
   const [enterNum, setEnteredNum] = useState<string>("");
   const numberInputHandler = (value: string) => {
     setEnteredNum(value);
@@ -19,56 +26,57 @@ export default function StartGameScreen() {
       );
       return;
     }
+
+    onPickNumber(enterNum);
   };
 
   const resetInputHandler = () => {
     setEnteredNum("");
   };
   return (
-    <View style={styles.inputContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder={""}
-        placeholderTextColor={colors.surface.color}
-        keyboardType={"number-pad"}
-        maxLength={2}
-        autoCapitalize={"none"}
-        autoCorrect={false}
-        value={enterNum}
-        onChangeText={numberInputHandler}
-      />
-      <View style={styles.inputActionsContainer}>
-        <View style={styles.buttonContainer}>
-          <GNButton onPress={resetInputHandler}>Reset</GNButton>
+    <View style={styles.startGameContainer}>
+      <Title>Guess Number</Title>
+      <Card>
+        <Text style={styles.intro}>Enter a Number</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType={"number-pad"}
+          maxLength={2}
+          autoCapitalize={"none"}
+          autoCorrect={false}
+          value={enterNum}
+          onChangeText={numberInputHandler}
+        />
+        <View style={styles.inputActionsContainer}>
+          <View style={styles.buttonContainer}>
+            <GNButton onPress={resetInputHandler} disabled={!enterNum}>
+              Reset
+            </GNButton>
+          </View>
+          <View style={styles.buttonContainer}>
+            <GNButton onPress={confirmInputHandler} disabled={!enterNum}>
+              Confirm
+            </GNButton>
+          </View>
         </View>
-        <View style={styles.buttonContainer}>
-          <GNButton onPress={confirmInputHandler} disabled={!enterNum}>
-            Confirm
-          </GNButton>
-        </View>
-      </View>
+      </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  inputContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+  startGameContainer: {
+    paddingHorizontal: 16,
     marginTop: 30,
-    marginHorizontal: 24,
-    padding: 16,
-    backgroundColor: "#16A34A",
-    borderRadius: 8,
-    // for android shadow
-    elevation: 10,
-    // for ios shadow - start
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1.25,
-    shadowRadius: 6,
-    // for ios shadow - end
+    //alignItems: "center",
   },
+  intro: {
+    fontFamily: "Inter_900Black",
+    color: colors.surface.color,
+    fontSize: typography.heading2.fontSize,
+    textAlign: "center",
+  },
+
   input: {
     height: 70,
     width: 70,
@@ -79,6 +87,8 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     fontWeight: "bold",
     textAlign: "center",
+    alignSelf: "center",
+    marginBottom: 32,
   },
   inputActionsContainer: {
     flexDirection: "row",

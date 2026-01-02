@@ -6,7 +6,7 @@ import {
   View,
   type ViewStyle,
 } from "react-native";
-import colors from "../styles/colors";
+import colors from "../../styles/colors";
 import { ReactNode } from "react";
 
 export interface GNButtonProps {
@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonText: {
+    fontFamily: "Inter_900Black",
     color: colors.primary.color,
     textAlign: "center",
   },

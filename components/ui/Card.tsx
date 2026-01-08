@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1.25,
     shadowRadius: 6,
-
     // for ios shadow - end
   },
 });

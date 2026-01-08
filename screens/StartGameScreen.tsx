@@ -1,10 +1,19 @@
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import GNButton from "../components/ui/GNButton";
 import { useState } from "react";
 import Title from "../components/ui/Title";
 import colors from "../styles/colors";
 import typography from "../styles/typography";
 import Card from "../components/ui/Card";
+import ScreenBaseView from "../components/ui/ScreenBaseView";
 
 export default function StartGameScreen({
   onPickNumber,
@@ -34,42 +43,41 @@ export default function StartGameScreen({
     setEnteredNum("");
   };
   return (
-    <View style={styles.startGameContainer}>
-      <Title>Guess Number</Title>
-      <Card>
-        <Text style={styles.intro}>Enter a Number</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType={"number-pad"}
-          maxLength={2}
-          autoCapitalize={"none"}
-          autoCorrect={false}
-          value={enterNum}
-          onChangeText={numberInputHandler}
-        />
-        <View style={styles.inputActionsContainer}>
-          <View style={styles.buttonContainer}>
-            <GNButton onPress={resetInputHandler} disabled={!enterNum}>
-              Reset
-            </GNButton>
-          </View>
-          <View style={styles.buttonContainer}>
-            <GNButton onPress={confirmInputHandler} disabled={!enterNum}>
-              Confirm
-            </GNButton>
-          </View>
-        </View>
-      </Card>
-    </View>
+    <ScrollView style={{ flex: 1 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={"position"}>
+        <ScreenBaseView>
+          <Title>Guess Number</Title>
+          <Card>
+            <Text style={styles.intro}>Enter a Number</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType={"number-pad"}
+              maxLength={2}
+              autoCapitalize={"none"}
+              autoCorrect={false}
+              value={enterNum}
+              onChangeText={numberInputHandler}
+            />
+            <View style={styles.inputActionsContainer}>
+              <View style={styles.buttonContainer}>
+                <GNButton onPress={resetInputHandler} disabled={!enterNum}>
+                  Reset
+                </GNButton>
+              </View>
+              <View style={styles.buttonContainer}>
+                <GNButton onPress={confirmInputHandler} disabled={!enterNum}>
+                  Confirm
+                </GNButton>
+              </View>
+            </View>
+          </Card>
+        </ScreenBaseView>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  startGameContainer: {
-    paddingHorizontal: 16,
-    marginTop: 30,
-    //alignItems: "center",
-  },
   intro: {
     fontFamily: "Inter_900Black",
     color: colors.surface.color,

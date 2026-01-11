@@ -1,5 +1,4 @@
 import {
-  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -8,42 +7,55 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useCallback, useMemo } from "react";
 import typography from "../styles/typography";
 import colors from "../styles/colors";
 import GNButton from "../components/ui/GNButton";
 import ScreenBaseView from "../components/ui/ScreenBaseView";
 
+type GameOverScreenProps = {
+  roundsNumber: number;
+  userNumber: string;
+  onStartOver: () => void;
+};
+
+const IMAGE_SIZE_DEFAULT = 300;
+const IMAGE_SIZE_SMALL_WIDTH = 150;
+const IMAGE_SIZE_SMALL_HEIGHT = 80;
+
+const BORDER_GRADIENT_COLORS = ["#4ADE80", "#22D3EE"] as const;
+
 function GameOverScreen({
   roundsNumber,
   userNumber,
   onStartOver,
-}: {
-  roundsNumber: number;
-  userNumber: string;
-  onStartOver: () => void;
-}) {
-  const handleStartOver = () => onStartOver();
+}: GameOverScreenProps) {
   const { width, height } = useWindowDimensions();
-  let imageSize = 300;
 
-  if (width < 410) {
-    imageSize = 150;
-  }
-  if (height < 400) {
-    imageSize = 80;
-  }
+  const handleStartOver = useCallback(() => {
+    onStartOver();
+  }, [onStartOver]);
 
-  const imageStyle = {
-    width: imageSize,
-    height: imageSize,
-    borderRadius: imageSize / 2,
-  };
+  const imageSize = useMemo(() => {
+    if (height < 400) return IMAGE_SIZE_SMALL_HEIGHT;
+    if (width < 410) return IMAGE_SIZE_SMALL_WIDTH;
+    return IMAGE_SIZE_DEFAULT;
+  }, [height, width]);
+
+  const imageStyle = useMemo(
+    () => ({
+      width: imageSize,
+      height: imageSize,
+      borderRadius: imageSize / 2,
+    }),
+    [imageSize],
+  );
 
   return (
     <ScrollView>
       <ScreenBaseView style={styles.container}>
         <LinearGradient
-          colors={["#4ADE80", "#22D3EE"]}
+          colors={BORDER_GRADIENT_COLORS}
           style={styles.gradientBorder}
         >
           <View style={[styles.imageContainer, imageStyle]}>
@@ -64,8 +76,6 @@ function GameOverScreen({
   );
 }
 
-const deviceWidth = Dimensions.get("window").width;
-
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
@@ -73,7 +83,7 @@ const styles = StyleSheet.create({
     gap: 32,
   },
   gradientBorder: {
-    borderRadius: 150,
+    borderRadius: IMAGE_SIZE_DEFAULT / 2,
     padding: 4,
   },
   imageContainer: {

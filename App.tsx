@@ -1,63 +1,82 @@
 import { ImageBackground, StatusBar, StyleSheet } from "react-native";
-import StartGameScreen from "./screens/StartGameScreen";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { JSX, useEffect, useState } from "react";
-import GameScreen from "./screens/GameScreen";
-import GameOverScreen from "./screens/GameOverScreen";
+import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { Inter_900Black, useFonts } from "@expo-google-fonts/inter";
 
+import StartGameScreen from "./screens/StartGameScreen";
+import GameScreen from "./screens/GameScreen";
+import GameOverScreen from "./screens/GameOverScreen";
+
 export default function App() {
   const [userNumber, setUserNumber] = useState<string | null>(null);
-  const [gameIsOver, setGameIsOver] = useState<boolean>(false);
-  const [guessRounds, setGuessRounds] = useState<number>(0);
+  const [gameIsOver, setGameIsOver] = useState(false);
+  const [guessRounds, setGuessRounds] = useState(0);
 
   const [loaded, error] = useFonts({ Inter_900Black });
 
   useEffect(() => {
-    if (!loaded) SplashScreen.preventAutoHideAsync();
-    if (loaded || error) SplashScreen.hideAsync();
+    // Keep splash visible until fonts are loaded (or an error occurs).
+    SplashScreen.preventAutoHideAsync();
+  }, []);
+
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
   }, [loaded, error]);
 
-  if (!loaded && !error) return null;
-
-  const gameOverHandler = (numberOfRounds: number) => {
+  const gameOverHandler = useCallback((numberOfRounds: number) => {
     setGameIsOver(true);
     setGuessRounds(numberOfRounds);
-  };
+  }, []);
 
-  const starterNewGameHandler = () => {
+  const startNewGameHandler = useCallback(() => {
     setUserNumber(null);
     setGuessRounds(0);
-  };
+    setGameIsOver(false);
+  }, []);
 
-  const pickNumberHandler = (pickedNumber: string) => {
+  const pickNumberHandler = useCallback((pickedNumber: string) => {
     setUserNumber(pickedNumber);
     setGameIsOver(false);
-  };
+  }, []);
 
-  let screen: JSX.Element = (
-    <StartGameScreen onPickNumber={pickNumberHandler} />
-  );
-  if (userNumber && userNumber.length > 0) {
-    screen = (
-      <GameScreen userNumber={userNumber} onGameOver={gameOverHandler} />
-    );
-  }
-  if (gameIsOver && userNumber) {
-    screen = (
-      <GameOverScreen
-        userNumber={userNumber}
-        roundsNumber={guessRounds}
-        onStartOver={starterNewGameHandler}
-      />
-    );
-  }
+  const screen: JSX.Element | null = useMemo(() => {
+    if (!loaded && !error) return null;
+
+    if (gameIsOver && userNumber) {
+      return (
+        <GameOverScreen
+          userNumber={userNumber}
+          roundsNumber={guessRounds}
+          onStartOver={startNewGameHandler}
+        />
+      );
+    }
+
+    if (userNumber) {
+      return (
+        <GameScreen userNumber={userNumber} onGameOver={gameOverHandler} />
+      );
+    }
+
+    return <StartGameScreen onPickNumber={pickNumberHandler} />;
+  }, [
+    loaded,
+    error,
+    gameIsOver,
+    userNumber,
+    guessRounds,
+    startNewGameHandler,
+    gameOverHandler,
+    pickNumberHandler,
+  ]);
 
   return (
     <>
-      <StatusBar barStyle={"light-content"}></StatusBar>
+      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={["#30a316", "#DFC517EF"]}
         style={styles.rootScreen}
@@ -65,12 +84,12 @@ export default function App() {
         <ImageBackground
           source={require("./assets/images/background.jpg")}
           resizeMode="cover"
-          style={{ flex: 1 }}
+          style={styles.rootScreen}
           imageStyle={styles.backgroundImage}
         >
           <SafeAreaProvider>
             <SafeAreaView
-              style={{ flex: 1 }}
+              style={styles.rootScreen}
               edges={["top", "bottom", "left", "right"]}
             >
               {screen}

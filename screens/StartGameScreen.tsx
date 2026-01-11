@@ -8,64 +8,84 @@ import {
   View,
 } from "react-native";
 import GNButton from "../components/ui/GNButton";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Title from "../components/ui/Title";
 import colors from "../styles/colors";
 import typography from "../styles/typography";
 import Card from "../components/ui/Card";
 import ScreenBaseView from "../components/ui/ScreenBaseView";
 
+type StartGameScreenProps = {
+  onPickNumber: (pickedNumber: string) => void;
+};
+
+const MIN_NUMBER = 1;
+const MAX_NUMBER = 99;
+
 export default function StartGameScreen({
   onPickNumber,
-}: {
-  onPickNumber: (pickedNumber: string) => void;
-}) {
-  const [enterNum, setEnteredNum] = useState<string>("");
-  const numberInputHandler = (value: string) => {
-    setEnteredNum(value);
-  };
+}: StartGameScreenProps) {
+  const [enteredNum, setEnteredNum] = useState<string>("");
 
-  const confirmInputHandler = () => {
-    const chosenNumber = parseInt(enterNum);
-    if (isNaN(chosenNumber) || chosenNumber <= 0 || chosenNumber > 99) {
+  const sanitizedInput = useMemo(
+    () => enteredNum.replace(/[^\d]/g, ""),
+    [enteredNum],
+  );
+  const isInputEmpty = sanitizedInput.length === 0;
+
+  const resetInputHandler = useCallback(() => {
+    setEnteredNum("");
+  }, []);
+
+  const numberInputHandler = useCallback((value: string) => {
+    // On some keyboards/paste events, non-digits can slip in; sanitize aggressively.
+    setEnteredNum(value.replace(/[^\d]/g, ""));
+  }, []);
+
+  const confirmInputHandler = useCallback(() => {
+    const chosenNumber = Number(sanitizedInput);
+
+    const isValid =
+      Number.isInteger(chosenNumber) &&
+      chosenNumber >= MIN_NUMBER &&
+      chosenNumber <= MAX_NUMBER;
+
+    if (!isValid) {
       Alert.alert(
         "Invalid Number",
-        "Number has to be a number between 1 and 99",
+        `Number has to be a number between ${MIN_NUMBER} and ${MAX_NUMBER}`,
         [{ text: "OK", onPress: resetInputHandler, style: "destructive" }],
       );
       return;
     }
 
-    onPickNumber(enterNum);
-  };
+    onPickNumber(sanitizedInput);
+  }, [onPickNumber, resetInputHandler, sanitizedInput]);
 
-  const resetInputHandler = () => {
-    setEnteredNum("");
-  };
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={"position"}>
+    <ScrollView style={styles.root}>
+      <KeyboardAvoidingView style={styles.root} behavior="position">
         <ScreenBaseView>
           <Title>Guess Number</Title>
           <Card>
             <Text style={styles.intro}>Enter a Number</Text>
             <TextInput
               style={styles.input}
-              keyboardType={"number-pad"}
+              keyboardType="number-pad"
               maxLength={2}
-              autoCapitalize={"none"}
+              autoCapitalize="none"
               autoCorrect={false}
-              value={enterNum}
+              value={enteredNum}
               onChangeText={numberInputHandler}
             />
             <View style={styles.inputActionsContainer}>
               <View style={styles.buttonContainer}>
-                <GNButton onPress={resetInputHandler} disabled={!enterNum}>
+                <GNButton onPress={resetInputHandler} disabled={isInputEmpty}>
                   Reset
                 </GNButton>
               </View>
               <View style={styles.buttonContainer}>
-                <GNButton onPress={confirmInputHandler} disabled={!enterNum}>
+                <GNButton onPress={confirmInputHandler} disabled={isInputEmpty}>
                   Confirm
                 </GNButton>
               </View>
@@ -78,6 +98,8 @@ export default function StartGameScreen({
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
+
   intro: {
     fontFamily: "Inter_900Black",
     color: colors.surface.color,
@@ -98,9 +120,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 32,
   },
+
   inputActionsContainer: {
     flexDirection: "row",
   },
+
   buttonContainer: {
     flex: 1,
   },
